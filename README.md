@@ -6,3 +6,5 @@ In the worker .env the database url for railway and the open ai api key is enter
 
 link_to_video:https://drive.google.com/file/d/113V2AW4ubxgPIgHCKkQClFIlxpmH6D6K/view?usp=sharing
 
+link_to_url: https://fingraphfront-production.up.railway.app/
+
