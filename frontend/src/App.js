@@ -6,17 +6,23 @@ function App() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [rawOutput, setRawOutput] = useState(null); // new state for raw output
 
   const apiBase = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
   const fetchStockData = async (tickerSymbol) => {
     setLoading(true);
     setError(null);
+    setRawOutput(null); // reset raw output on each fetch
     try {
       const res = await fetch(`${apiBase}/api/stocks?ticker=${tickerSymbol}`);
+      const text = await res.text(); // get raw text first
+      setRawOutput(text); // store raw response for debugging
+
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      const json = await res.json();
-      const chartData = json.map((row) => ({
+
+      const json = JSON.parse(text); // try parsing JSON
+      const chartData = json.slice(0, 3).map((row) => ({
         date: row.record_date,
         close: row.prices?.Close || row.prices?.close || 0,
         insights: row.insights || [],
@@ -63,10 +69,26 @@ function App() {
       </div>
 
       {loading && <p>Loading chart...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && (
+        <div style={{ color: "red" }}>
+          <p>Error: {error}</p>
+          {rawOutput && (
+            <pre
+              style={{
+                background: "#f0f0f0",
+                padding: 10,
+                maxHeight: 200,
+                overflow: "auto",
+              }}
+            >
+              {rawOutput}
+            </pre>
+          )}
+        </div>
+      )}
 
-      {/* Render the chart */}
-      <StockChart data={data} />
+      {/* Render the chart only if data exists */}
+      {!error && <StockChart data={data} />}
 
       {!loading && !error && data.length > 0 && (
         <div style={{ marginTop: 20 }}>
