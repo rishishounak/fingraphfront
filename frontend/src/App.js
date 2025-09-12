@@ -6,22 +6,26 @@ function App() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [rawOutput, setRawOutput] = useState(null); // new state for raw output
+  const [rawOutput, setRawOutput] = useState(null); // for debugging raw backend output
 
-  const apiBase = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  // ✅ Always point to backend
+  const apiBase =
+    process.env.REACT_APP_API_URL || "https://your-backend-domain.com";
 
   const fetchStockData = async (tickerSymbol) => {
     setLoading(true);
     setError(null);
-    setRawOutput(null); // reset raw output on each fetch
+    setRawOutput(null);
+
     try {
+      // ✅ Call backend API
       const res = await fetch(`${apiBase}/api/stocks?ticker=${tickerSymbol}`);
-      const text = await res.text(); // get raw text first
-      setRawOutput(text); // store raw response for debugging
+      const text = await res.text(); // raw text for debugging
+      setRawOutput(text);
 
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-      const json = JSON.parse(text); // try parsing JSON
+      const json = JSON.parse(text);
       const chartData = json.slice(0, 3).map((row) => ({
         date: row.record_date,
         close: row.prices?.Close || row.prices?.close || 0,
@@ -29,7 +33,7 @@ function App() {
       }));
       setData(chartData);
     } catch (err) {
-      console.error(err);
+      console.error("❌ Backend fetch failed:", err);
       setError(err.message);
       setData([]);
     } finally {
@@ -71,7 +75,7 @@ function App() {
       {loading && <p>Loading chart...</p>}
       {error && (
         <div style={{ color: "red" }}>
-          <p>Error: {error}</p>
+          <p>Backend Error: {error}</p>
           {rawOutput && (
             <pre
               style={{
@@ -87,7 +91,6 @@ function App() {
         </div>
       )}
 
-      {/* Render the chart only if data exists */}
       {!error && <StockChart data={data} />}
 
       {!loading && !error && data.length > 0 && (
@@ -106,8 +109,8 @@ function App() {
       )}
 
       <p style={{ fontSize: 12, color: "#666", marginTop: 12 }}>
-        Note: this front-end calls your backend API; set REACT_APP_API_URL in
-        production to your backend URL.
+        Note: Frontend calls your <b>backend API</b> → set{" "}
+        <code>REACT_APP_API_URL</code> in production to your backend URL.
       </p>
     </div>
   );
