@@ -4,7 +4,14 @@ const cors = require('cors');
 const { Pool } = require('pg');
 
 const app = express();
-app.use(cors());
+
+// ✅ Allow only your frontend
+app.use(cors({
+  origin: "https://fingraphfront-production.up.railway.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true,
+}));
+
 app.use(express.json());
 
 // Request logging middleware
